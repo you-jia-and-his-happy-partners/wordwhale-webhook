@@ -59,7 +59,7 @@ def handle_message(event):
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "You are a cute assistant acting as a kitty."},
-                        {"role": "user", "content": event.message.text}
+                        {"role": "user", "content": event.message.text[2:]}
                     ]
                 )
                 app.logger.debug("Chat completed with response: %s", completion)
