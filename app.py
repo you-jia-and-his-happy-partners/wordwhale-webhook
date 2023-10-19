@@ -63,7 +63,7 @@ def handle_message(event):
                     ]
                 )
                 app.logger.debug("Chat completed with response: %s", completion)
-                reply = completion.choices[0].message
+                reply = completion.choices[0].message.content
             except openai.error.RateLimitError:
                 reply = '<quota exceeded, please report the issue>'
 
