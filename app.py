@@ -32,6 +32,15 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////app/data/chat.db"
 db.init_app(app)
 
+
+# Define the model with columns id (user id or group id), session_id, grammar_on, caption_on
+class User(db.Model):
+    id = db.Column(db.String, primary_key=True)
+    session_id = db.Column(db.String)
+    grammar_on = db.Column(db.Boolean, default=False)
+    caption_on = db.Column(db.Boolean, default=False)
+    translation_on = db.Column(db.Boolean, default=False)
+
 load_dotenv()
 channel_secret = os.getenv('CHANNEL_SECRET')
 access_token = os.getenv('CHANNEL_ACCESS_TOKEN')
@@ -119,8 +128,9 @@ def handle_message(event):
 
             app.logger.debug(req.text)
         elif event.message.text == "> 文法糾正":
-            data = DBHelper.select_data(source_id)
+            data = DBHelper.select_data(User, app, source_id)
             DBHelper.update_flags(
+                User, app, db,
                 data["id"], not data["grammar_on"],
                 data["caption_on"], data["translation_on"])
             
@@ -128,8 +138,9 @@ def handle_message(event):
                 "文法糾正已切換為 {}".format(('開啟', '關閉')[data['grammar_on']])
             )
         elif event.message.text == "> 語音輔助字幕顯示":
-            data = DBHelper.select_data(source_id)
+            data = DBHelper.select_data(User, app, source_id)
             DBHelper.update_flags(
+                User, app, db,
                 data["id"], data["grammar_on"],
                 not data["caption_on"], data["translation_on"])
             
@@ -137,8 +148,9 @@ def handle_message(event):
                 "語音輔助字幕已切換為 {}".format(('開啟', '關閉')[data['caption_on']])
             )
         elif event.message.text == "> 中文輔助字幕顯示":
-            data = DBHelper.select_data(source_id)
+            data = DBHelper.select_data(User, app, source_id)
             DBHelper.update_flags(
+                User, app, db,
                 data["id"], data["grammar_on"],
                 data["caption_on"], not data["translation_on"])
             
