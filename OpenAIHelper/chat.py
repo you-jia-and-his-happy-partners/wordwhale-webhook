@@ -204,7 +204,7 @@ def chat_with_character_trait(character_trait, target_scene):
 def chat_random():
     ## STEP1: generate character randomly
     # get template
-    with open(f"resource/chat-template/1_character_gen.chat", encoding='utf-8') as chatfile:
+    with open(f"resource/chat-template/random_character_gen.chat", encoding='utf-8') as chatfile:
         content = chatfile.read()
     character_gen_tmpl = Template(content)
 
@@ -225,7 +225,7 @@ def chat_random():
 
     ## STEP2: refine character setting
     character_refine_tmpl = load_chat_template_safe(
-            '2_character_refine.chat',
+            'random_character_refine.chat',
             {
                 "step1_result": chat_completion_1.choices[0].message.content
             }
@@ -246,7 +246,7 @@ def chat_random():
 
     ## STEP3: generate scene
     scene_gen_tmpl = load_chat_template_safe(
-            '3_scene_gen.chat',
+            'random_scene_gen.chat',
             {
                 "step2_result": chat_completion_2.choices[0].message.content
             }
@@ -268,7 +268,7 @@ def chat_random():
 
     ## STEP4: create starting dialog based on STEP2 and STEP3
     dialog_start_tmpl = load_chat_template_safe(
-            '4_dialog_start.chat',
+            'random_dialog_start.chat',
             {
                 "step2_result": chat_completion_2.choices[0].message.content,
                 "step3_result": chat_completion_3.choices[0].message.content
