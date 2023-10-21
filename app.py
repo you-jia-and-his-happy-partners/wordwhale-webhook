@@ -24,9 +24,12 @@ from OpenAIHelper.chat import (chat_default)
 
 from flask_sqlalchemy import SQLAlchemy
 
+
+# create the extension
+db = SQLAlchemy()
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app/data/chat.db"
-db = SQLAlchemy(app)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////app/data/chat.db"
+db.init_app(app)
 
 load_dotenv()
 channel_secret = os.getenv('CHANNEL_SECRET')
