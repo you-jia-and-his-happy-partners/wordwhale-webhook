@@ -24,6 +24,7 @@ from OpenAIHelper.chat import (chat_default)
 
 from flask_sqlalchemy import SQLAlchemy
 
+from DBHelper import DBHelper
 
 # create the extension
 db = SQLAlchemy()
@@ -78,17 +79,17 @@ def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
 
+        source_id = ""
+
+        if event.source.type == "user":
+            source_id = event.source.user_id
+        elif event.source.type == "room":
+            source_id = event.source.room_id
+        else:
+            source_id = event.source.group_id
+
         msg_to = str(event.source)
-        if event.message.text == "> 重設場景":
-            source_id = ""
-
-            if event.source.type == "user":
-                source_id = event.source.user_id
-            elif event.source.type == "room":
-                source_id = event.source.room_id
-            else:
-                source_id = event.source.group_id
-
+        if event.message.text == "> 場景切換":
             api_url = 'https://api.line.me/v2/bot/message/push'
 
             header = {
@@ -110,10 +111,25 @@ def handle_message(event):
             req = requests.post(api_url, headers=header, data=json.dumps(body))
 
             app.logger.debug(req.text)
-        # DEBUG: reply to '> [...]' msg with chatGPT
+        elif event.message.text == "> 文法糾正":
+            data = DBHelper.select_data(source_id)
+            DBHelper.update_flags(
+                data["id"], not data["grammar_on"],
+                data["caption_on"], data["translation_on"])
+        elif event.message.text == "> 語音輔助字幕顯示":
+            data = DBHelper.select_data(source_id)
+            DBHelper.update_flags(
+                data["id"], data["grammar_on"],
+                not data["caption_on"], data["translation_on"])
+        elif event.message.text == "> 中文輔助字幕顯示":
+            data = DBHelper.select_data(source_id)
+            DBHelper.update_flags(
+                data["id"], data["grammar_on"],
+                data["caption_on"], data["translation_on"])
         elif event.message.text == "> 重設對話":
             if msg_to in _user_chat_cache:
                 del _user_chat_cache[msg_to]
+        # DEBUG: reply to '> [...]' msg with chatGPT
         elif event.message.text.startswith("> "):
             reply = '<failed to process the chat>'
             try:

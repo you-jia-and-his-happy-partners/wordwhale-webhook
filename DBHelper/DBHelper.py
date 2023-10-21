@@ -9,12 +9,13 @@ def create_table():
 
 
 # Insert data into the table
-def insert_data(id, session_id, grammar_on, caption_on):
+def insert_data(id, session_id, grammar_on, caption_on, translation_on):
     with app.app_context():
         new_user = User(
             id=id, session_id=session_id,
             grammar_on=grammar_on,
-            caption_on=caption_on
+            caption_on=caption_on,
+            translation_on=translation_on
             )
         db.session.add(new_user)
         db.session.commit()
@@ -33,12 +34,13 @@ def update_session(id, session_id):
 
 
 # Update grammar_on and caption_on with specific id
-def update_flags(id, grammar_on, caption_on):
+def update_flags(id, grammar_on, caption_on, translation_on):
     with app.app_context():
         user = User.query.get(id)
         if user:
             user.grammar_on = grammar_on
             user.caption_on = caption_on
+            user.translation_on = translation_on
             db.session.commit()
             return True
         return False
@@ -52,7 +54,8 @@ def select_data(id):
             return {
                 "id": user.id, "session_id": user.session_id,
                 "grammar_on": user.grammar_on,
-                "caption_on": user.caption_on
+                "caption_on": user.caption_on,
+                "translation_on": user.translation_on
             }
         return False
 
