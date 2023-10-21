@@ -209,7 +209,7 @@ def handle_audio_message(event):
         receive_text = get_text(audio_file_url)
 
         # chatgpt
-        reply_text = 
+        reply_text = "hi, I am wordwhale!"
 
         # text to speech
         reply_audio = get_speech_file_link(reply_text)
