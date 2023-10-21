@@ -21,7 +21,7 @@ import openai
 
 from CarouselTemplateFactory.CarouselTemplateFactory import (
     SceneCarouselTemplateFactory)
-from OpenAIHelper.chat import (chat_default, chat_with_character_trait)
+from OpenAIHelper.chat import (chat_default, chat_with_character_trait, chat_random)
 from AWSTranslate.translate import (translate_en_zh)
 from AzureSpeechToText.SpeechToText import (
     get_text_with_content,
@@ -128,6 +128,9 @@ def handle_message(event):
 
         msg_to = str(event.source)
         if event.message.text == "> 場景切換":
+            if msg_to in _user_chat_cache:
+                del _user_chat_cache[msg_to]
+            
             api_url = 'https://api.line.me/v2/bot/message/push'
 
             header = {
@@ -186,7 +189,8 @@ def handle_message(event):
             scene = event.message.text[7:]
             # SceneStateDBHelper
             if scene == "隨機":
-                print("WIP")
+                reply = reply_chat_random_scene_and_character(msg_to)
+                reply_message(reply)
             else:
                 DBHelper.SceneStateDBHelper.delete_data(SceneState, app, db, msg_to)
                 DBHelper.SceneStateDBHelper.insert_data(
@@ -370,6 +374,17 @@ def reply_chat_cached_with_character_trait(msg_to, character_trait, scene, secti
     try:
         section_reply, _user_chat_cache[msg_to] = chat_with_character_trait(character_trait, scene)
         reply = "\n---\n".join(section_reply[sect] for sect in sections)
+    except openai.error.RateLimitError:
+        reply = '<quota exceeded, please report the issue>'
+
+    return reply
+
+
+def reply_chat_random_scene_and_character(msg_to):
+    reply = '<failed to process the chat>'
+    try:
+        section_reply, _user_chat_cache[msg_to] = chat_random()
+        reply = f"{section_reply['reply']}\n---\nHere's the story settings:\nScene: {section_reply['scene']}\nCharacter: {section_reply['character']}"
     except openai.error.RateLimitError:
         reply = '<quota exceeded, please report the issue>'
 
