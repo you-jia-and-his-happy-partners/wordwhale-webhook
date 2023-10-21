@@ -6,8 +6,14 @@ from dotenv import load_dotenv
 import azure.cognitiveservices.speech as speechsdk
 
 
+def get_text_with_content(content):
+    local_file_path = _convert(content)
+    text = _from_local_to_azure(local_file_path)
+    return text
+
+
 # Speech to Text
-def get_text(url):
+def get_text_with_url(url):
     local_file_path = _download_and_convert(url)
     text = _from_local_to_azure(local_file_path)
     return text
@@ -31,11 +37,25 @@ def _download_and_convert(url):
     # Remove m4a file in local
     os.system(f"rm {m4a_file_name}")
 
-    # Remove wav file in local
-    os.system(f"rm {wav_file_name}")
-
     return wav_file_name
 
+
+def _convert(content):
+    # Use uuid to generate filename
+    serial_number = str(uuid.uuid4())
+    m4a_file_name = f"{serial_number}.m4a"
+    wav_file_name = f"{serial_number}.wav"
+
+    with open(m4a_file_name, "wb") as f:
+        f.write(content)
+
+    # Use ffmpeg to covert audio file
+    ffmpeg.input(m4a_file_name).output(wav_file_name, acodec='pcm_s16le', ar=44100).run()
+
+    # Remove m4a file in local
+    os.system(f"rm {m4a_file_name}")
+
+    return wav_file_name
 
 # Azure Speech SDK
 def _from_local_to_azure(wav_file_name):
