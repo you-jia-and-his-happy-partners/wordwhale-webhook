@@ -14,13 +14,17 @@ from linebot.v3.messaging import (
     MessagingApi,
     ReplyMessageRequest,
     TextMessage,
+    AudioMessage,
 )
-from linebot.v3.webhooks import (MessageEvent, TextMessageContent)
+from linebot.v3.webhooks import (MessageEvent, TextMessageContent, AudioMessageContent)
 import openai
 
 from CarouselTemplateFactory.CarouselTemplateFactory import (
     SceneCarouselTemplateFactory)
 from OpenAIHelper.chat import (chat_default)
+from AWSTranslate.translate import (translate_en_zh)
+from AzureSpeechToText.SpeechToText import (get_text)
+from AzureTextToSpeech.TextToSpeech import (get_speech_file_link)
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -180,3 +184,60 @@ def handle_message(event):
             reply_message(reply)
         else:
             reply_message(event.message.text)
+
+@handler.add(MessageEvent, message=AudioMessageContent)
+def handle_audio_message(event):
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+        audio_file_url = event.message.originalContentUrl
+
+        # get id
+        source_id = ""
+
+        if event.source.type == "user":
+            source_id = event.source.user_id
+        elif event.source.type == "room":
+            source_id = event.source.room_id
+        else:
+            source_id = event.source.group_id
+
+        # select data
+        data = DBHelper.select_data(User, app, source_id)
+
+        # speech to text
+        receive_text = get_text(audio_file_url)
+
+        # ChatGPT
+        reply_text = "hi, I am wordwhale!"
+
+        # text to speech
+        reply_audio, audio_file_duration = get_speech_file_link(reply_text)
+
+        # reply audio file
+        line_bot_api.reply_message_with_http_info(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[AudioMessage(originalContentUrl=reply_audio,
+                                       duration=audio_file_duration)]
+            )
+        )
+
+        # check if caption_on and reply
+        if (data["caption_on"]):
+            line_bot_api.reply_message_with_http_info(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=reply_text)]
+                )
+            )
+        
+        # check if translation_on and reply
+        if (data["translation_on"]):
+            reply_zh = translate_en_zh(reply_text)
+
+            line_bot_api.reply_message_with_http_info(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=reply_zh)]
+                )
+            )

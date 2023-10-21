@@ -7,9 +7,9 @@ import AzureFileStorage
 
 
 def get_speech_file_link(text):
-    local_file_path = _download_speech_file(text)
+    local_file_path, duration = _download_speech_file(text)
     file_path = AzureFileStorage.upload_file_to_azure(local_file_path)
-    return file_path
+    return file_path, duration
 
 
 def _download_speech_file(text):
@@ -35,7 +35,15 @@ def _download_speech_file(text):
     output_stream = ffmpeg.output(input_stream, m4a_file_name, acodec='aac')
     ffmpeg.run(output_stream)
 
+    probe = ffmpeg.probe(m4a_file_name,
+                         v='error', select_streams='a:0',
+                         show_entries='format=duration', of='json')
+    duration = float(probe['format']['duration'])
+
     # Remove unused wav file.
     os.system(f"rm {wav_file_name}")
 
-    return m4a_file_name
+    # Remove unused m4a file.
+    os.system(f"rm {m4a_file_name}")
+
+    return m4a_file_name, duration

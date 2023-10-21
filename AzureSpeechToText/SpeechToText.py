@@ -5,13 +5,15 @@ import os
 from dotenv import load_dotenv
 import azure.cognitiveservices.speech as speechsdk
 
-## Speech to Text
+
+# Speech to Text
 def get_text(url):
     local_file_path = _download_and_convert(url)
     text = _from_local_to_azure(local_file_path)
     return text
 
-## Download to local and Convert the file
+
+# Download to local and Convert the file
 def _download_and_convert(url):
     # Use uuid to generate filename
     serial_number = str(uuid.uuid4())
@@ -29,10 +31,13 @@ def _download_and_convert(url):
     # Remove m4a file in local
     os.system(f"rm {m4a_file_name}")
 
+    # Remove wav file in local
+    os.system(f"rm {wav_file_name}")
+
     return wav_file_name
 
 
-## Azure Speech SDK
+# Azure Speech SDK
 def _from_local_to_azure(wav_file_name):
     # Load Key and Region
     load_dotenv()
