@@ -202,11 +202,9 @@ def chat_with_character_trait(character_trait, target_scene):
 
 # Set character and scene randomly
 def chat_random():
-    ## STEP1: generate character randomly
+    # STEP1: generate character randomly
     # get template
-    with open(f"resource/chat-template/random_character_gen.chat", encoding='utf-8') as chatfile:
-        content = chatfile.read()
-    character_gen_tmpl = Template(content)
+    character_gen_tmpl = load_chat_template_safe("random_character_gen", {})
 
     # send to openai and get result
     chat_hist = [{
@@ -223,7 +221,7 @@ def chat_random():
             "content": chat_completion_1.choices[0].message.content
         })
 
-    ## STEP2: refine character setting
+    # STEP2: refine character setting
     character_refine_tmpl = load_chat_template_safe(
             'random_character_refine.chat',
             {
@@ -244,7 +242,7 @@ def chat_random():
             "content": chat_completion_2.choices[0].message.content
         })
 
-    ## STEP3: generate scene
+    # STEP3: generate scene
     scene_gen_tmpl = load_chat_template_safe(
             'random_scene_gen.chat',
             {
@@ -264,9 +262,8 @@ def chat_random():
             "role": "system",
             "content": chat_completion_3.choices[0].message.content
         })
-    
 
-    ## STEP4: create starting dialog based on STEP2 and STEP3
+    # STEP4: create starting dialog based on STEP2 and STEP3
     dialog_start_tmpl = load_chat_template_safe(
             'random_dialog_start.chat',
             {
@@ -284,11 +281,14 @@ def chat_random():
         messages=chat_hist
     )
 
+    _chat_id = chat_completion_4.id
+    chat_hist.append(chat_completion_4.choices[0].message)
+    _chat_cache[_chat_id] = chat_hist
+
     # Return values
     sections = {
-        "character": chat_completion_1.choices[0].message.content,
-        "scene": chat_completion_3.choices[0].message.content,
-        "reply": chat_completion_4.choices[0].message.content
+        "reply": chat_completion_4.choices[0].message.content,
+        "grammar": ""
     }
 
-    return sections
+    return sections, _chat_id
