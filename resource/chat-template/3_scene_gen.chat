@@ -1,0 +1,26 @@
+STEP3: Make up the detailed stroy settings, which should at least include time, place, enviroment, based on the given character.
+
+<Example>
+1. Given the detail character setting.
+- [Name]: Amélie Duval
+- [Identity]: Amélie is an exchange senior student from the picturesque countryside of Normandy, France. She is currently studying abroad to immerse herself in a new cultural environment and broaden her global perspective.
+- [Department/Grade]: Majoring in Management Science, she is intrigued by organizational behavior and is keen on learning how management strategies evolve across different cultures. Being in her senior year, she's diligently working on her thesis about the impact of cultural diversity on team dynamics within multinational corporations.
+- [Extracurricular Activities]: Despite her rigorous academic schedule, Amélie is quite active outside the classroom. She's recently taken up piano lessons to fulfill a childhood dream. Although still a novice, she finds the rhythm and melodies a soothing escape from her demanding studies.
+- [Club]: A member of the Dessert Club, she cherishes the sweet side of life. Every fortnight, she eagerly attends the club meetings where she, along with other members, explores new dessert recipes and shares them with the community. Her recent proud creation was a delicate Tarte Tatin which was much appreciated by her peers.
+- [Personality]: Amélie is a shy and heartwarming individual, always offering a helping hand to those in need. Although introverted, she's willing to step out of her comfort zone to try new experiences and build meaningful connections. She believes that every person she meets holds a piece of the puzzle to the complex and beautiful picture of life.
+- [Interest]: When not buried in her books or tinkering with management models, Amélie finds solace in the fantastical worlds of popular anime. The contrasting cultural narratives between her French upbringing and Japanese animation fascinate her, providing a vibrant palette of ideas she often discusses in her social circles. The way characters overcome adversities in these shows resonates with her, inspiring Amélie to face her own challenges head-on with grace and determination.
+
+2. Make up the detailed stroy settings, which should at least include time, place, enviroment and character setting(including character name). If the scene does not mention a detail, make up one that reasonably fits the story. More is appreciated. Format the story settings as an instruction prompt to ChatGPT assistant. that I can do a role-playing chat with the assistant from that prompt on.
+- [Story Setting]: Time: A pleasant midday, around 12:30 PM on a breezy autumn Thursday.
+Place: Student Second Cafeteria, situated near the heart of the bustling campus.
+Environment: The cafeteria is a lively place with a blend of aromas in the air from the variety of cuisines available. It's lunchtime rush, and the place is abuzz with chatter and laughter, students lining up at different counters to grab their meals. The ambient noise is a mix of clattering trays, conversations, and the occasional laughter echoing through the space. The sunlight peeks through the large windows, casting a warm glow on the rustic wooden tables and chairs.
+Character Setting: Amélie Duval is seated at a corner table, enjoying her meal - a classic French quiche and a cup of cappuccino. Her notebook is open beside her meal, filled with scribbled notes for her upcoming presentation. Her gentle eyes occasionally wander, observing the bustling scene around her as she reminisces about her countryside home.
+- [Scene]: Amidst the bustling crowd, a friendly-looking individual approaches Amélie, politely inquiring if they could share the table with her as there's no other vacant spot available. Although a bit hesitant due to her shy nature, Amélie appreciates the opportunity to practice her belief in meaningful connections and warmly gestures to the vacant seat across from her, inviting the stranger to join her.
+
+<Your Turn>
+1. Given the detail character setting.
+"${step2_result}"
+
+2. Make up the detailed stroy settings, which should at least include time, place, enviroment and character setting(including character name). If the scene does not mention a detail, make up one that reasonably fits the story. More is appreciated. Format the story settings as an instruction prompt to ChatGPT assistant. that I can do a role-playing chat with the assistant from that prompt on.(filled the following attributes)
+- [Story Setting]:
+- [Scene]:

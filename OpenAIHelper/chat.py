@@ -199,3 +199,96 @@ def chat_with_character_trait(character_trait, target_scene):
         "grammar": ""
     }
     return sections, chat_completion.id
+
+# Set character and scene randomly
+def chat_random():
+    ## STEP1: generate character randomly
+    # get template
+    with open(f"resource/chat-template/1_character_gen.chat", encoding='utf-8') as chatfile:
+        content = chatfile.read()
+    character_gen_tmpl = Template(content)
+
+    # send to openai and get result
+    chat_hist = [{
+            "role": "user",
+            "content": character_gen_tmpl
+        }]
+
+    chat_completion_1 = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=chat_hist
+    )
+    chat_hist.append({
+            "role": "system",
+            "content": chat_completion_1.choices[0].message.content
+        })
+
+    ## STEP2: refine character setting
+    character_refine_tmpl = load_chat_template_safe(
+            '2_character_refine.chat',
+            {
+                "step1_result": chat_completion_1.choices[0].message.content
+            }
+        )
+
+    chat_hist.append({
+            "role": "user",
+            "content": character_refine_tmpl
+        })
+    chat_completion_2 = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=chat_hist
+    )
+    chat_hist.append({
+            "role": "system",
+            "content": chat_completion_2.choices[0].message.content
+        })
+
+    ## STEP3: generate scene
+    scene_gen_tmpl = load_chat_template_safe(
+            '3_scene_gen.chat',
+            {
+                "step2_result": chat_completion_2.choices[0].message.content
+            }
+        )
+
+    chat_hist.append({
+            "role": "user",
+            "content": scene_gen_tmpl
+        })
+    chat_completion_3 = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=chat_hist
+    )
+    chat_hist.append({
+            "role": "system",
+            "content": chat_completion_3.choices[0].message.content
+        })
+    
+
+    ## STEP4: create starting dialog based on STEP2 and STEP3
+    dialog_start_tmpl = load_chat_template_safe(
+            '4_dialog_start.chat',
+            {
+                "step2_result": chat_completion_2.choices[0].message.content,
+                "step3_result": chat_completion_3.choices[0].message.content
+            }
+        )
+
+    chat_hist.append({
+            "role": "user",
+            "content": dialog_start_tmpl
+        })
+    chat_completion_4 = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=chat_hist
+    )
+
+    # Return values
+    sections = {
+        "character": chat_completion_1.choices[0].message.content,
+        "scene": chat_completion_3.choices[0].message.content,
+        "reply": chat_completion_4.choices[0].message.content
+    }
+
+    return sections
