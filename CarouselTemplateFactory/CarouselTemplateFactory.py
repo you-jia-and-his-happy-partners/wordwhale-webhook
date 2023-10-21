@@ -14,7 +14,7 @@ def SceneCarouselTemplateFactory():
         '/question_mark.png' + sas_token,
     ]
     _titles = ['餐廳', '隨機']
-    _texts = ['', '隨機化']
+    _texts = ['餐廳', '隨機化']
     _actions = [{
         'label': '> 場景設定:餐廳',
         'text': '> 場景設定:餐廳'
