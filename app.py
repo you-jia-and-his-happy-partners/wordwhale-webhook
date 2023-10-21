@@ -105,7 +105,7 @@ Public facebook club of campus: https://www.facebook.com/NYCUSACTCampus/?locale=
                     )
 
                 grammar_tmpl = load_chat_template_safe(
-                        'grammar.system',
+                        'grammar.user',
                         {
                             "content": user_msg
                         }
