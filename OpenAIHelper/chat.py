@@ -107,8 +107,8 @@ def chat_default(user_msg, chat_id=None):
 
     logger.debug("Chat completed with response: %s", chat_completion)
     logger.debug("Grammar completed with response: %s", grammar_completion)
-    reply = f"""{chat_completion.choices[0].message.content}
----
-{grammar_completion.choices[0].message.content}
-"""
-    return reply, chat_completion.id
+    sections = {
+        "reply": chat_completion.choices[0].message.content,
+        "grammar": grammar_completion.choices[0].message.content
+    }
+    return sections, chat_completion.id

@@ -223,7 +223,7 @@ def handle_audio_message(event):
 
         # ChatGPT
         msg_to = str(event.source)
-        reply_text = reply_chat_cached(msg_to, receive_text)
+        reply_text = reply_chat_cached(msg_to, receive_text, sections=['reply'])
 
         # text to speech
         reply_audio, audio_file_duration = get_speech_file_link(reply_text)
@@ -269,14 +269,15 @@ def _reply_text_with_push_message_api(source_id, text):
     app.logger.debug(req.text)
 
 
-def reply_chat_cached(msg_to, user_msg):
+def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar']):
     reply = '<failed to process the chat>'
     try:
         chat_id = None
         if msg_to in _user_chat_cache:
             chat_id = _user_chat_cache[msg_to]
 
-        reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
+        section_reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
+        reply = "\n---\n".join(section_reply[sect] for sect in sections)
     except openai.error.RateLimitError:
         reply = '<quota exceeded, please report the issue>'
 
