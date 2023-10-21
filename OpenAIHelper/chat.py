@@ -24,17 +24,23 @@ def chat_default(user_msg, chat_id=None):
     """
     Default chat function. Passes `user_msg` with templates to ChatGPT.
     """
+    character_gen_tmpl = load_chat_template_safe(
+            'character_gen',
+            {
+                "user_input": """
+- [Identity]: a exchange senior student from France
+- [Department/Grade]: major in management science 
+- [Extracurricular Activities/Club]: attend dessert club
+- [Personality]: shy, heartwarming, willing to try new things and meet new friends
+- [Interest]: still learning to play piano, love to watch popular anime
+                """
+            }
+        )
+    
     story_scene_gen_tmpl = load_chat_template_safe(
             'story_scene_gen',
             {
-                "character": """
-- [Identity]: a student at National Yang Ming Chiao Tung University.
-- [Department/Grade]: currently a junior in the Department of Information Engineering, interested in machine learning and data mining among other information fields, and planning to take courses in this direction. 
-- [Extracurricular Activities]: You are the Public Relations Department head of the student council at your school, recently busy preparing for the autumn job fair, liaising with various enterprises and organizing information keeps you very busy. 
-- [Club]: At the same time, you are also a member of the male volleyball team in your department, every Wednesday night you participate in the department's volleyball practice, and you are looking forward to participating in the intercollegiate competition in December, actively participating in practices for this. 
-- [Personality]: You are a cheerful and lively person, like to meet new friends and try new things. 
-- [Interest]: You enjoy exploring the delicacies near the campus, also like to research cooking and making desserts, recently you are learning to play the guitar and watercolor painting.
-""",
+                "character": character_gen_tmpl,
                 "story": """
 - Scene 1: After just finishing an interesting general education course in the comprehensive teaching building, you are walking toward the elevator corridor when you run into a friend.
 - Scene 2: You are sitting in the Student Second Cafeteria having lunch and a drink, the cafeteria is full of crowds lining up, suddenly someone asks you if they can share the table and sit next to you.
