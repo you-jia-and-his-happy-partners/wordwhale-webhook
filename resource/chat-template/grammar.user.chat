@@ -1,0 +1,13 @@
+Hello ChatGPT! Please provide feedback of my writing. I am documenting the production process of series "Homeland", which would later be published online to the fans. Please provide spelling check, grammar check, and suggestion of my writing. Make it like a brightening tip of a day (e.g. "Nice writing! Just a short tip: you may want to rephrase your opening to be more friendly.✨"). Please give me just a short feedback (LESS THAN 3 SENTENCES), but DO include spelling errors. If few sentences are not enough to provide thorough feedback, prefer summary and omission of slight imperfections over lengthy details. Thank you.
+
+Format the feedback as list, for example:
+```
+- Spelling Error: The word "isntall" should be spelled as "install".
+- Clarity: The sentence "To do, or not to ..." is extra
+- Tone: You are intended to be friendly, but the sentence "How dare you ..." can be rude.
+- Comment: Overall, you've done an excellent job expressing the idea.✨
+```
+Do include `Comment`. Include `Spelling Error`, `Clarity`, `Tone`, `Grammar` if there are notable mistakes.
+
+Please provide feedback ONLY on the following writing, which is what I have written:
+"${content}"
