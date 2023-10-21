@@ -1,15 +1,11 @@
-from app import db, app
-from DBModel.User import User
-
-
-def create_table():
+def create_table(app, db):
     with app.app_context():
         db.create_all()
         app.logger.debug("DB table created!")
 
 
 # Insert data into the table
-def insert_data(id, session_id, grammar_on, caption_on, translation_on):
+def insert_data(User, app, db, id, session_id, grammar_on, caption_on, translation_on):
     with app.app_context():
         new_user = User(
             id=id, session_id=session_id,
@@ -23,7 +19,7 @@ def insert_data(id, session_id, grammar_on, caption_on, translation_on):
 
 
 # Update session_id with specific id
-def update_session(id, session_id):
+def update_session(User, app, db, id, session_id):
     with app.app_context():
         user = User.query.get(id)
         if user:
@@ -34,7 +30,7 @@ def update_session(id, session_id):
 
 
 # Update grammar_on and caption_on with specific id
-def update_flags(id, grammar_on, caption_on, translation_on):
+def update_flags(User, app, db, id, grammar_on, caption_on, translation_on):
     with app.app_context():
         user = User.query.get(id)
         if user:
@@ -47,7 +43,7 @@ def update_flags(id, grammar_on, caption_on, translation_on):
 
 
 # Select data with specific id
-def select_data(id):
+def select_data(User, app, id):
     with app.app_context():
         user = User.query.get(id)
         if user:
@@ -61,7 +57,7 @@ def select_data(id):
 
 
 # Delete data with specific id
-def delete_data(id):
+def delete_data(User, app, db, id):
     with app.app_context():
         user = User.query.get(id)
         if user:
