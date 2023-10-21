@@ -39,6 +39,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 handler = WebhookHandler(channel_secret)
 configuration = Configuration(access_token=access_token)
 
+_user_chat_cache = {}
+
 
 def create_table():
     with app.app_context():
@@ -76,6 +78,7 @@ def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
 
+        msg_to = str(event.source)
         if event.message.text == "> 重設場景":
             source_id = ""
 
@@ -108,11 +111,18 @@ def handle_message(event):
 
             app.logger.debug(req.text)
         # DEBUG: reply to '> [...]' msg with chatGPT
+        elif event.message.text == "> 重設對話":
+            if msg_to in _user_chat_cache:
+                del _user_chat_cache[msg_to]
         elif event.message.text.startswith("> "):
             reply = '<failed to process the chat>'
             try:
                 user_msg = event.message.text[2:]
-                reply = chat_default(user_msg)
+                chat_id = None
+                if msg_to in _user_chat_cache:
+                    chat_id = _user_chat_cache[msg_to]
+
+                reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
             except openai.error.RateLimitError:
                 reply = '<quota exceeded, please report the issue>'
 
