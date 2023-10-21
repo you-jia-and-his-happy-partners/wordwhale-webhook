@@ -104,6 +104,10 @@ def handle_message(event):
         else:
             source_id = event.source.group_id
 
+        if DBHelper.select_data(User, app, source_id) is False:
+            DBHelper.insert_data(
+                User, app, db, source_id, '', False, False, False)
+
         msg_to = str(event.source)
         if event.message.text == "> 場景切換":
             api_url = 'https://api.line.me/v2/bot/message/push'
