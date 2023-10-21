@@ -14,11 +14,14 @@ def SceneCarouselTemplateFactory():
         '/question_mark.png' + sas_token,
     ]
 
-    _titles = ['餐廳', '隨機']
-    _texts = ['餐廳', '隨機化']
+    _titles = ['電梯前', '學生餐廳', '隨機']
+    _texts = ['上完通識課等電梯時，遇到...', '在餐廳吃飯時，遇到...', '隨機配對聊天對象和情境']
     _actions = [{
-        'label': '> 場景設定:餐廳',
-        'text': '> 場景設定:餐廳'
+        'label': '> 場景設定:電梯前',
+        'text': '> 場景設定:電梯前'
+    }, {
+        'label': '> 場景設定:學生餐廳',
+        'text': '> 場景設定:學生餐廳'
     }, {
         'label': '> 場景設定:隨機',
         'text': '> 場景設定:隨機'
