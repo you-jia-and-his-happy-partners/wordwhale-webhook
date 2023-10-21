@@ -23,7 +23,10 @@ from CarouselTemplateFactory.CarouselTemplateFactory import (
     SceneCarouselTemplateFactory)
 from OpenAIHelper.chat import (chat_default)
 from AWSTranslate.translate import (translate_en_zh)
-from AzureSpeechToText.SpeechToText import (get_text)
+from AzureSpeechToText.SpeechToText import (
+    get_text_with_content,
+    get_text_with_url,
+)
 from AzureTextToSpeech.TextToSpeech import (get_speech_file_link)
 
 from flask_sqlalchemy import SQLAlchemy
@@ -185,11 +188,23 @@ def handle_message(event):
         else:
             reply_message(event.message.text)
 
+
 @handler.add(MessageEvent, message=AudioMessageContent)
 def handle_audio_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
-        audio_file_url = event.message.originalContentUrl
+
+        audio_file_url = ""
+        audio_file_content = ""
+    
+        if event.message.content_provider.type == "line":
+            message_id = event.message.id
+            contentUrl = f"https://api-data.line.me/v2/bot/message/{message_id}/content"
+            header = {'Authorization': f"Bearer {access_token}"}
+            response = requests.get(contentUrl, headers=header)
+            audio_file_content = response.content
+        else:
+            audio_file_url = event.message.original_content_url
 
         # get id
         source_id = ""
@@ -204,8 +219,15 @@ def handle_audio_message(event):
         # select data
         data = DBHelper.select_data(User, app, source_id)
 
+        receive_text = ""
+
         # speech to text
-        receive_text = get_text(audio_file_url)
+        if audio_file_url != "":
+            receive_text = get_text_with_url(audio_file_url)
+        else:
+            receive_text = get_text_with_content(audio_file_content)
+
+        app.logger.debug("Receive text: %s", receive_text)
 
         # ChatGPT
         reply_text = "hi, I am wordwhale!"
@@ -224,20 +246,31 @@ def handle_audio_message(event):
 
         # check if caption_on and reply
         if (data["caption_on"]):
-            line_bot_api.reply_message_with_http_info(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=reply_text)]
-                )
-            )
-        
+            _reply_text_with_push_message_api(source_id, reply_text)
+
         # check if translation_on and reply
         if (data["translation_on"]):
             reply_zh = translate_en_zh(reply_text)
+            _reply_text_with_push_message_api(source_id, reply_zh)
 
-            line_bot_api.reply_message_with_http_info(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=reply_zh)]
-                )
-            )
+
+def _reply_text_with_push_message_api(source_id, text):
+    api_url = 'https://api.line.me/v2/bot/message/push'
+
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': f"Bearer ${access_token}"
+    }
+
+    body = {
+        "to": source_id,
+        "messages": [
+            {
+                "type": "text",
+                "text": text
+            }
+        ]
+    }
+
+    req = requests.post(api_url, headers=header, data=json.dumps(body))
+    app.logger.debug(req.text)
