@@ -4,10 +4,15 @@ from flask import Flask, request, abort
 from dotenv import load_dotenv
 
 from linebot.v3 import (WebhookHandler)
+from linebot.models import (TemplateSendMessage)
 from linebot.v3.exceptions import (InvalidSignatureError)
-from linebot.v3.messaging import (Configuration, ApiClient, MessagingApi,
-                                  ReplyMessageRequest, TextMessage,
-                                  TemplateMessage)
+from linebot.v3.messaging import (
+    Configuration,
+    ApiClient,
+    MessagingApi,
+    ReplyMessageRequest,
+    TextMessage,
+)
 from linebot.v3.webhooks import (MessageEvent, TextMessageContent)
 import openai
 
@@ -57,17 +62,23 @@ def handle_message(event):
         line_bot_api = MessagingApi(api_client)
 
         if event.message.text == "> 重設場景":
-            line_bot_api.reply_message_with_http_info(
-                ReplyMessageRequest(
-                    replyToken=event.reply_token,
-                    messages=[
-                        TemplateMessage(
-                            template=SceneCarouselTemplateFactory())
-                    ]))
+            source_id = ""
+
+            if event.source.type == "user":
+                source_id = event.source.user_id
+            elif event.source.type == "room":
+                source_id = event.source.room_id
+            else:
+                source_id = event.source.group_id
+
+            line_bot_api.push_message(
+                source_id,
+                TemplateSendMessage(template=SceneCarouselTemplateFactory(),
+                                    alt_text='Carousel for scene'))
 
         # DEBUG: reply to '> [...]' msg with chatGPT
         # TODO: migrate to OpenAIHelper/
-        if event.message.text.startswith("> "):
+        elif event.message.text.startswith("> "):
             reply = '<failed to process the chat>'
             try:
                 user_msg = event.message.text[2:]
