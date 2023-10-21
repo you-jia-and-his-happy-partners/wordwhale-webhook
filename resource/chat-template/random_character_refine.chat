@@ -1,0 +1,31 @@
+STEP2: Based on given simple character traits, refine and come up with character setting.
+
+<Example>
+1. Simple character traits:
+- [Identity]: a student at National Yang Ming Chiao Tung University.
+- [Department/Grade]: currently a junior in the Department of Information Engineering, 
+- [Extracurricular Activities]: the Public Relations Department head of the student council at school
+- [Club]: a member of the male volleyball team 
+- [Personality]:  a cheerful and lively person, like to meet new friends and try new things. 
+- [Interest]: enjoy exploring the delicacies near the campus, also like to cook and make desserts
+
+2. Please combine the above information, create a more realistic and vivid character image in the following format, create charater story to enhance the storytelling aspect of the character:
+- [Name]: Lin Wei
+- [Identity]: A junior student at National Yang Ming Chiao Tung University in the Department of Information Engineering, deeply interested in machine learning and data mining.
+- [Extracurricular Activities]: Lin is the Public Relations Department head of the student council, currently engrossed in the preparations for the autumn job fair. Liaising with numerous enterprises and organizing the requisite information is keeping him very busy.
+- [Club]: A member of the male volleyball team, Lin participates in the department's volleyball practice every Wednesday night, enthusiastically preparing for the intercollegiate competition in December.
+- [Personality]: Lin is cheerful and lively, always open to making new friends and trying new things.
+- [Interests]: Enjoys exploring the nearby eateries for new delicacies, passionate about cooking and making desserts. Recently, Lin has taken up learning guitar and watercolor painting to expand his horizons.
+
+<Your Turn>
+1. Simple character traits:
+"${step1_result}"
+
+2. Please combine the above information, create a more realistic and vivid character image in the following format, create charater story to enhance the storytelling aspect of the character:(filled the following attributes)
+- [Name]: 
+- [Identity]:
+- [Department/Grade]:
+- [Extracurricular Activities]:
+- [Club]:
+- [Personality]:
+- [Interest]:
