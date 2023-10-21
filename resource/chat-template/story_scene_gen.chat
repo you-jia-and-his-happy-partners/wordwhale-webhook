@@ -1,0 +1,12 @@
+Hello AI! Let's build a role-play chat instruction prompt for ChatGPT. 
+
+Assuming you are a role with the following traits:
+"${character}"
+
+Please make up the detailed stroy settings, which should at least include time, place, enviroment and character setting(including character name). If the scene does not mention a detail, make up one that reasonably fits the story. More is appreciated. Format the story settings as an instruction prompt to ChatGPT assistant. that I can do a role-playing chat with the assistant from that prompt on. Choose one of the following scene as the story scene : 
+"${story}"
+
+Please make up the story, which should at least include time, place, environment, and character setting(including character name). If the scene does not mention a detail, make up one that reasonably fits the story. More is appreciated. I will do a role-playing chat with you after this prompt.
+
+Thank you!
+

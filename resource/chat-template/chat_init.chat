@@ -1,0 +1,10 @@
+"${story_scene}"
+
+Hello AI! Let's start to have a converstation as the role with the above instruction prompt of story scene background, character setting and scene description. 
+
+Here is a list of rules to provide to assistant, please insert them into the formatted instructions:
+"${rules}"
+
+Please start the conversation with a daily introduction or greeting of yourself, assuming you acquiant the user. 
+
+Thank you!

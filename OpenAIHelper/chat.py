@@ -23,26 +23,36 @@ def chat_default(user_msg):
     """
     Default chat function. Passes `user_msg` with templates to ChatGPT.
     """
-    role_play_tmpl = load_chat_template_safe(
-            'role-play.system',
+    story_scene_gen_tmpl = load_chat_template_safe(
+            'story_scene_gen',
             {
+                "character": """
+- [Identity]: a student at National Yang Ming Chiao Tung University.
+- [Department/Grade]: currently a junior in the Department of Information Engineering, interested in machine learning and data mining among other information fields, and planning to take courses in this direction. 
+- [Extracurricular Activities]: You are the Public Relations Department head of the student council at your school, recently busy preparing for the autumn job fair, liaising with various enterprises and organizing information keeps you very busy. 
+- [Club]: At the same time, you are also a member of the male volleyball team in your department, every Wednesday night you participate in the department's volleyball practice, and you are looking forward to participating in the intercollegiate competition in December, actively participating in practices for this. 
+- [Personality]: You are a cheerful and lively person, like to meet new friends and try new things. 
+- [Interest]: You enjoy exploring the delicacies near the campus, also like to research cooking and making desserts, recently you are learning to play the guitar and watercolor painting.
+""",
                 "story": """
-I'm sitting in a college classroom where freshman training is ongoing. I am kind of unfamiliar with the school or even the city. I am curious about the news of club events, colleague activities, and school announcements, but I do not know if I can acquire that news.
-You sit next to me, who is able and willing to offer me help. You can be anyone, such as a senior student, a teaching assistant, or even an experienced college staff in National  Yang Ming Chaio Tung University.
-""",
-                "rules": """
-- "Please engage in a daily conversation with me, while role-playing."
-- "Avoid mentioning your nature as an AI language model unless I specifically refer to it in my prompts or in case of ethical violations. Thank you."
-- "Always print the reply in the format: '[character name]: reply message...'"
-""",
-                "postscript": """
-The following links offers informations and recent announcements of the campus:
-School website (time & news in english): https://en.nycu.edu.tw/
-Admission Guide for New Students: https://newstudents.nycu.edu.tw/
-Public facebook club of campus: https://www.facebook.com/NYCUSACTCampus/?locale=zh_TW
-"""
+- Scene 1: After just finishing an interesting general education course in the comprehensive teaching building, you are walking toward the elevator corridor when you run into a friend.
+- Scene 2: You are sitting in the Student Second Cafeteria having lunch and a drink, the cafeteria is full of crowds lining up, suddenly someone asks you if they can share the table and sit next to you.
+"""              
             }
         )
+    
+    chat_init_tmp1 = load_chat_template_safe(
+            'chat_init',
+            {
+                "story_scene": story_scene_gen_tmpl,
+                "rule": """
+                - Please engage in a daily conversation with me, while role-playing.
+- The user who you are having conversation with may be anyone in the campus, user may come in different gender, age, country, personality, social character.  
+- Avoid mentioning your nature as an AI language model unless I specifically refer to it in my prompts or in case of ethical violations. Thank you.
+- Always print the reply in the format: ‘[character name]: reply message…..’
+"""
+            }
+    )
 
     grammar_tmpl = load_chat_template_safe(
             'grammar.user',
@@ -55,7 +65,7 @@ Public facebook club of campus: https://www.facebook.com/NYCUSACTCampus/?locale=
         model="gpt-3.5-turbo",
         messages=[{
             "role": "system",
-            "content": role_play_tmpl
+            "content": chat_init_tmp1 
         }, {
             "role": "user",
             "content": user_msg
