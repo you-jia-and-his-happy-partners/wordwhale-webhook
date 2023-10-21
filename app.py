@@ -190,7 +190,6 @@ def handle_audio_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         audio_file_url = event.message.originalContentUrl
-        audio_file_duration = event.message.duration
 
         # get id
         source_id = ""
@@ -203,22 +202,23 @@ def handle_audio_message(event):
             source_id = event.source.group_id
 
         # select data
-        data = DBHelper.select_data(source_id)
+        data = DBHelper.select_data(User, app, source_id)
 
         # speech to text
         receive_text = get_text(audio_file_url)
 
-        # chatgpt
+        # ChatGPT
         reply_text = "hi, I am wordwhale!"
 
         # text to speech
-        reply_audio = get_speech_file_link(reply_text)
+        reply_audio, audio_file_duration = get_speech_file_link(reply_text)
 
         # reply audio file
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[AudioMessage(originalContentUrl=reply_audio, duration=audio_file_duration)]
+                messages=[AudioMessage(originalContentUrl=reply_audio,
+                                       duration=audio_file_duration)]
             )
         )
 
@@ -233,7 +233,7 @@ def handle_audio_message(event):
         
         # check if translation_on and reply
         if (data["translation_on"]):
-            reply_zh=translate_en_zh(reply_text)
+            reply_zh = translate_en_zh(reply_text)
 
             line_bot_api.reply_message_with_http_info(
                 ReplyMessageRequest(
