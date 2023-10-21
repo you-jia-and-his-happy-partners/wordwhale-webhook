@@ -21,7 +21,7 @@ import openai
 
 from CarouselTemplateFactory.CarouselTemplateFactory import (
     SceneCarouselTemplateFactory)
-from OpenAIHelper.chat import (chat_default)
+from OpenAIHelper.chat import (chat_default, chat_with_character_trait)
 from AWSTranslate.translate import (translate_en_zh)
 from AzureSpeechToText.SpeechToText import (
     get_text_with_content,
@@ -40,13 +40,24 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////app/data/chat.db"
 db.init_app(app)
 
 
-# Define the model with columns id (user id or group id), session_id, grammar_on, caption_on
+# Define the model with columns id (user id or group id), grammar_on, caption_on
 class User(db.Model):
     id = db.Column(db.String, primary_key=True)
-    session_id = db.Column(db.String)
     grammar_on = db.Column(db.Boolean, default=False)
     caption_on = db.Column(db.Boolean, default=False)
     translation_on = db.Column(db.Boolean, default=False)
+
+
+class SceneState(db.Model):
+    id = db.Column(db.String, primary_key=True)
+    scene = db.Column(db.String)
+    identity = db.Column(db.String)
+    departmentGrade = db.Column(db.String)
+    extracurricularActivities = db.Column(db.String)
+    club = db.Column(db.String)
+    personality = db.Column(db.String)
+    interest = db.Column(db.String)
+
 
 load_dotenv()
 channel_secret = os.getenv('CHANNEL_SECRET')
@@ -111,8 +122,8 @@ def handle_message(event):
         else:
             source_id = event.source.group_id
 
-        if DBHelper.select_data(User, app, source_id) is False:
-            DBHelper.insert_data(
+        if DBHelper.UserDBHelper.select_data(User, app, source_id) is False:
+            DBHelper.UserDBHelper.insert_data(
                 User, app, db, source_id, '', False, False, False)
 
         msg_to = str(event.source)
@@ -139,8 +150,8 @@ def handle_message(event):
 
             app.logger.debug(req.text)
         elif event.message.text == "> 文法糾正":
-            data = DBHelper.select_data(User, app, source_id)
-            DBHelper.update_flags(
+            data = DBHelper.UserDBHelper.select_data(User, app, source_id)
+            DBHelper.UserDBHelper.update_flags(
                 User, app, db,
                 data["id"], not data["grammar_on"],
                 data["caption_on"], data["translation_on"])
@@ -149,8 +160,8 @@ def handle_message(event):
                 "文法糾正已切換為 {}".format(('開啟', '關閉')[data['grammar_on']])
             )
         elif event.message.text == "> 語音輔助字幕顯示":
-            data = DBHelper.select_data(User, app, source_id)
-            DBHelper.update_flags(
+            data = DBHelper.UserDBHelper.select_data(User, app, source_id)
+            DBHelper.UserDBHelper.update_flags(
                 User, app, db,
                 data["id"], data["grammar_on"],
                 not data["caption_on"], data["translation_on"])
@@ -159,8 +170,8 @@ def handle_message(event):
                 "語音輔助字幕已切換為 {}".format(('開啟', '關閉')[data['caption_on']])
             )
         elif event.message.text == "> 中文輔助字幕顯示":
-            data = DBHelper.select_data(User, app, source_id)
-            DBHelper.update_flags(
+            data = DBHelper.UserDBHelper.select_data(User, app, source_id)
+            DBHelper.UserDBHelper.update_flags(
                 User, app, db,
                 data["id"], data["grammar_on"],
                 data["caption_on"], not data["translation_on"])
@@ -171,14 +182,80 @@ def handle_message(event):
         elif event.message.text == "> 重設對話":
             if msg_to in _user_chat_cache:
                 del _user_chat_cache[msg_to]
-        # DEBUG: reply to '> [...]' msg with chatGPT
-        elif event.message.text.startswith("> "):
-            user_msg = event.message.text[2:]
-            reply = reply_chat_cached(msg_to, user_msg)
-
-            reply_message(reply)
+        elif event.message.text.startswith("> 場景設定:"):
+            scene = event.message.text[7:]
+            # SceneStateDBHelper
+            if scene == "隨機":
+                print("WIP")
+            else:
+                DBHelper.SceneStateDBHelper.insert_data(
+                    SceneState, app, db, msg_to, scene)
+                reply_message("During this process, "
+                              "you'll design the character you want to chat "
+                              "with in 6 aspects\n"
+                              "which are"
+                              "Identity, Department/Grade, "
+                              "Extracurricular Activities, Club, Personality, "
+                              "Interest\n"
+                              "[Notice] Please fill in following information "
+                              "in English to build the "
+                              "character you chat with:\n"
+                              "- [Identity]: ")
         else:
-            reply_message(event.message.text)
+            data = DBHelper.SceneStateDBHelper.select_data(
+                SceneState, app, msg_to)
+            sections = ['reply']
+            data = DBHelper.UserDBHelper.select_data(User, app, source_id)
+            if data["grammar_on"]:
+                sections.append('grammar')
+
+            if data is False:
+                reply = reply_chat_cached(msg_to, event.message.text,
+                                          sections=sections)
+                reply_message(reply)
+            else:
+                characterSettings = [
+                    "identity",
+                    "departmentGrade",
+                    "extracurricularActivities",
+                    "club",
+                    "personality",
+                    "interest"
+                ]
+
+                replyMsgCharacterSettings = {
+                    "identity": "- [Identity]: ",
+                    "departmentGrade": "- [Department/Grade]: ",
+                    "extracurricularActivities": "- [Extracurricular Activities]: ",
+                    "club": "- [Club]: ",
+                    "personality": "- [Personality]: ",
+                    "interest": "- [Interest]: "
+                }
+
+                for i in range(len(characterSettings)):
+                    setting = characterSettings[i]
+                    if data[setting] == "":
+                        data[setting] = replyMsgCharacterSettings[setting] + event.message.text
+                        if i + 1 < len(characterSettings):
+                            nextSetting = characterSettings[i+1]
+                            reply_message(replyMsgCharacterSettings[nextSetting])
+                            DBHelper.SceneStateDBHelper.update_data(
+                                SceneState, app, db, msg_to, data)
+                        else:
+                            # Create a chat hist with given parameter.
+                            DBHelper.SceneStateDBHelper.delete_data(
+                                SceneState, app, db, msg_to)
+
+                            character_trait = ""
+                            for setting in characterSettings:
+                                character_trait = character_trait + "\n" + data[setting]
+
+                            reply_chat_cached_with_character_trait(
+                                msg_to,
+                                character_trait,
+                                data["scene"],
+                                sections)
+                        break
 
 
 @handler.add(MessageEvent, message=AudioMessageContent)
@@ -209,7 +286,7 @@ def handle_audio_message(event):
             source_id = event.source.group_id
 
         # select data
-        data = DBHelper.select_data(User, app, source_id)
+        data = DBHelper.UserDBHelper.select_data(User, app, source_id)
 
         receive_text = ""
 
@@ -277,6 +354,17 @@ def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar']):
             chat_id = _user_chat_cache[msg_to]
 
         section_reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
+        reply = "\n---\n".join(section_reply[sect] for sect in sections)
+    except openai.error.RateLimitError:
+        reply = '<quota exceeded, please report the issue>'
+
+    return reply
+
+
+def reply_chat_cached_with_character_trait(msg_to, character_trait, scene, sections=['reply', 'grammar']):
+    reply = '<failed to process the chat>'
+    try:
+        section_reply, _user_chat_cache[msg_to] = chat_with_character_trait(character_trait, scene)
         reply = "\n---\n".join(section_reply[sect] for sect in sections)
     except openai.error.RateLimitError:
         reply = '<quota exceeded, please report the issue>'
