@@ -40,6 +40,12 @@ handler = WebhookHandler(channel_secret)
 configuration = Configuration(access_token=access_token)
 
 
+def create_table():
+    with app.app_context():
+        db.create_all()
+        app.logger.debug("DB table created!")
+
+
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
