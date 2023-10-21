@@ -173,16 +173,8 @@ def handle_message(event):
                 del _user_chat_cache[msg_to]
         # DEBUG: reply to '> [...]' msg with chatGPT
         elif event.message.text.startswith("> "):
-            reply = '<failed to process the chat>'
-            try:
-                user_msg = event.message.text[2:]
-                chat_id = None
-                if msg_to in _user_chat_cache:
-                    chat_id = _user_chat_cache[msg_to]
-
-                reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
-            except openai.error.RateLimitError:
-                reply = '<quota exceeded, please report the issue>'
+            user_msg = event.message.text[2:]
+            reply = reply_chat_cached(msg_to, user_msg)
 
             reply_message(reply)
         else:
@@ -230,7 +222,8 @@ def handle_audio_message(event):
         app.logger.debug("Receive text: %s", receive_text)
 
         # ChatGPT
-        reply_text = "hi, I am wordwhale!"
+        msg_to = str(event.source)
+        reply_text = reply_chat_cached(msg_to, receive_text, sections=['reply'])
 
         # text to speech
         reply_audio, audio_file_duration = get_speech_file_link(reply_text)
@@ -274,3 +267,18 @@ def _reply_text_with_push_message_api(source_id, text):
 
     req = requests.post(api_url, headers=header, data=json.dumps(body))
     app.logger.debug(req.text)
+
+
+def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar']):
+    reply = '<failed to process the chat>'
+    try:
+        chat_id = None
+        if msg_to in _user_chat_cache:
+            chat_id = _user_chat_cache[msg_to]
+
+        section_reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
+        reply = "\n---\n".join(section_reply[sect] for sect in sections)
+    except openai.error.RateLimitError:
+        reply = '<quota exceeded, please report the issue>'
+
+    return reply
