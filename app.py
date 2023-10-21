@@ -3,6 +3,9 @@ import os
 from flask import Flask, request, abort
 from dotenv import load_dotenv
 
+import requests
+import json
+
 from linebot.v3 import (WebhookHandler)
 from linebot.models import (TemplateSendMessage)
 from linebot.v3.exceptions import (InvalidSignatureError)
@@ -71,11 +74,23 @@ def handle_message(event):
             else:
                 source_id = event.source.group_id
 
-            line_bot_api.push_message(
-                source_id,
-                TemplateSendMessage(template=SceneCarouselTemplateFactory(),
-                                    alt_text='Carousel for scene'))
+            api_url = 'https://api.line.me/v2/bot/message/push'
 
+            header = {'Content-Type': 'application/json', 'Authorization': f"Bearer ${access_token}"}
+            body = {
+                "to": source_id,
+                "messages": [
+                    {
+                        "type": "template",
+                        "altText": "scene selction carousel",
+                        "template": SceneCarouselTemplateFactory()
+                    }
+                ]
+            }
+
+            req = requests.post(api_url, headers=header, data=json.dumps(body))
+
+            app.logger.debug(req.text)
         # DEBUG: reply to '> [...]' msg with chatGPT
         # TODO: migrate to OpenAIHelper/
         elif event.message.text.startswith("> "):

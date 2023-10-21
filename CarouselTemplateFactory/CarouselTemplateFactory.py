@@ -13,6 +13,7 @@ def SceneCarouselTemplateFactory():
         'https://wordwhalestorage.file.core.windows.net/hackathon'
         '/question_mark.png' + sas_token,
     ]
+
     _titles = ['餐廳', '隨機']
     _texts = ['餐廳', '隨機化']
     _actions = [{
@@ -23,19 +24,28 @@ def SceneCarouselTemplateFactory():
         'text': '> 場景設定:隨機'
     }]
 
-    return CarouselTemplate(columns=_CarouselColumnTemplate(
-        _thumbnail_image_urls, _titles, _texts, _actions))
+    return {
+        "type": "carousel",
+        "columns": _CarouselColumnTemplate(
+            _thumbnail_image_urls, _titles, _texts, _actions)
+    }
 
 
 def _CarouselColumnTemplate(thumbnail_image_urls, titles, texts, actions):
     columns = []
     for i in range(len(titles)):
         columns.append(
-            CarouselColumn(thumbnail_image_url=thumbnail_image_urls[i],
-                           title=titles[i],
-                           text=texts[i],
-                           actions=[
-                               MessageAction(label=actions[i]['label'],
-                                             text=actions[i]['text']),
-                           ]))
+            {
+                "thumbnailImageUrl": thumbnail_image_urls[i],
+                "title": titles[i],
+                "text": texts[i],
+                "actions": [
+                    {
+                        "type": "message",
+                        "label": actions[i]['label'],
+                        "text": actions[i]['text']
+                    }
+                ]
+            }
+        )
     return columns
