@@ -7,7 +7,9 @@ Format the feedback as list, for example:
 - Tone: You are intended to be friendly, but the sentence "How dare you ..." can be rude.
 - Comment: Overall, you've done an excellent job expressing the idea.✨
 ```
-Do include `Comment`. Include `Spelling Error`, `Clarity`, `Tone`, `Grammar` if there are notable mistakes.
+Do include `Comment`. Only include `Spelling Error`, `Clarity`, `Tone`, `Grammar` if there are notable mistakes.
 
-Please provide feedback ONLY on the following writing, which is what I have written:
+Please provide feedback ONLY on my writing, and DO NOT spell check the example above!
+
+This is what I have written:
 "${content}"
