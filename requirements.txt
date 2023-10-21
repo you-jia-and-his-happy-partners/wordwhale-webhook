@@ -6,3 +6,4 @@ ffmpeg-python==0.2.0
 azure-storage-file-share==12.14.0
 openai==0.28.1
 Flask-SQLAlchemy==3.0.5
+boto3==1.28.68
