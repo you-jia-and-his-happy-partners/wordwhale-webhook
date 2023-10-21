@@ -114,7 +114,7 @@ def handle_message(event):
                 user_msg = event.message.text[2:]
                 chat_id = None
                 if msg_to in _user_chat_cache:
-                    _user_chat_cache[msg_to]
+                    chat_id = _user_chat_cache[msg_to]
 
                 reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
             except openai.error.RateLimitError:
