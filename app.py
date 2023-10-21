@@ -6,8 +6,11 @@ from dotenv import load_dotenv
 from linebot.v3 import (WebhookHandler)
 from linebot.v3.exceptions import (InvalidSignatureError)
 from linebot.v3.messaging import (Configuration, ApiClient, MessagingApi,
-                                  ReplyMessageRequest, TextMessage)
+                                  ReplyMessageRequest, TextMessage,
+                                  TemplateMessage)
 from linebot.v3.webhooks import (MessageEvent, TextMessageContent)
+from CarouselTemplateFactory.CarouselTemplateFactory import (
+    SceneCarouselTemplateFactory)
 
 import openai
 
@@ -51,28 +54,40 @@ def callback():
 def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
+
+        if event.message.text == "> 重設場景":
+            line_bot_api.reply_message_with_http_info(
+                ReplyMessageRequest(
+                    replyToken=event.reply_token,
+                    messages=[
+                        TemplateMessage(
+                            template=SceneCarouselTemplateFactory())
+                    ]))
+
         # DEBUG: reply to '> [...]' msg with chatGPT
         if event.message.text.startswith("> "):
             reply = '<failed to process the chat>'
             try:
                 completion = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are a cute assistant acting as a kitty."},
-                        {"role": "user", "content": event.message.text[2:]}
-                    ]
-                )
-                app.logger.debug("Chat completed with response: %s", completion)
+                    messages=[{
+                        "role":
+                        "system",
+                        "content":
+                        "You are a cute assistant acting as a kitty."
+                    }, {
+                        "role": "user",
+                        "content": event.message.text[2:]
+                    }])
+                app.logger.debug("Chat completed with response: %s",
+                                 completion)
                 reply = completion.choices[0].message.content
             except openai.error.RateLimitError:
                 reply = '<quota exceeded, please report the issue>'
 
             line_bot_api.reply_message_with_http_info(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=reply)]
-                )
-            )
+                ReplyMessageRequest(reply_token=event.reply_token,
+                                    messages=[TextMessage(text=reply)]))
         else:
             # echo msg
             line_bot_api.reply_message_with_http_info(
