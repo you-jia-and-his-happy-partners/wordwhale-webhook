@@ -7,7 +7,6 @@ import requests
 import json
 
 from linebot.v3 import (WebhookHandler)
-from linebot.models import (TemplateSendMessage)
 from linebot.v3.exceptions import (InvalidSignatureError)
 from linebot.v3.messaging import (
     Configuration,
@@ -23,7 +22,11 @@ from CarouselTemplateFactory.CarouselTemplateFactory import (
     SceneCarouselTemplateFactory)
 from OpenAIHelper.chat import (chat_default)
 
+from flask_sqlalchemy import SQLAlchemy
+
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app/data/chat.db"
+db = SQLAlchemy(app)
 
 load_dotenv()
 channel_secret = os.getenv('CHANNEL_SECRET')
@@ -76,7 +79,11 @@ def handle_message(event):
 
             api_url = 'https://api.line.me/v2/bot/message/push'
 
-            header = {'Content-Type': 'application/json', 'Authorization': f"Bearer ${access_token}"}
+            header = {
+                'Content-Type': 'application/json',
+                'Authorization': f"Bearer ${access_token}"
+            }
+            
             body = {
                 "to": source_id,
                 "messages": [
