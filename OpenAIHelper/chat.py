@@ -5,6 +5,7 @@ import openai
 
 
 logger = logging.getLogger(__name__)
+_chat_cache = {}
 
 
 def load_chat_template_safe(name, mapping):
@@ -19,7 +20,7 @@ def load_chat_template_safe(name, mapping):
     return tmpl.safe_substitute(mapping)
 
 
-def chat_default(user_msg):
+def chat_default(user_msg, chat_id=None):
     """
     Default chat function. Passes `user_msg` with templates to ChatGPT.
     """
@@ -54,6 +55,10 @@ def chat_default(user_msg):
             }
     )
 
+    if chat_id and chat_id not in _chat_cache:
+        logger.warning("Ignoring invalid chat id '%s'", chat_id)
+        chat_id = None
+
     grammar_tmpl = load_chat_template_safe(
             'grammar.user',
             {
@@ -61,16 +66,27 @@ def chat_default(user_msg):
             }
         )
 
+    if not chat_id:
+        chat_hist = [{
+            "role": "system",
+            "content": chat_init_tmp1
+        }]
+    else:
+        assert chat_id in _chat_cache
+        chat_hist = _chat_cache[chat_id]
+
+    chat_hist.append({
+        "role": "user",
+        "content": user_msg
+    })
     chat_completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[{
-            "role": "system",
-            "content": chat_init_tmp1 
-        }, {
-            "role": "user",
-            "content": user_msg
-        }]
+        messages=chat_hist
     )
+
+    chat_id = chat_completion.id
+    chat_hist.append(chat_completion.choices[0].message)
+    _chat_cache[chat_id] = chat_hist
 
     grammar_completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -89,4 +105,4 @@ def chat_default(user_msg):
 ---
 {grammar_completion.choices[0].message.content}
 """
-    return reply
+    return reply, chat_completion.id

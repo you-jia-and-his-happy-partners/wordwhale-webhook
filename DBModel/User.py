@@ -7,3 +7,4 @@ class User(db.Model):
     session_id = db.Column(db.String)
     grammar_on = db.Column(db.Boolean, default=False)
     caption_on = db.Column(db.Boolean, default=False)
+    translation_on = db.Column(db.Boolean, default=False)
