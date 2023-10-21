@@ -124,7 +124,7 @@ def handle_message(event):
 
         if DBHelper.UserDBHelper.select_data(User, app, source_id) is False:
             DBHelper.UserDBHelper.insert_data(
-                User, app, db, source_id, '', False, False, False)
+                User, app, db, source_id, False, False, False)
 
         msg_to = str(event.source)
         if event.message.text == "> 場景切換":
@@ -188,6 +188,7 @@ def handle_message(event):
             if scene == "隨機":
                 print("WIP")
             else:
+                DBHelper.SceneStateDBHelper.delete_data(SceneState, app, db, msg_to)
                 DBHelper.SceneStateDBHelper.insert_data(
                     SceneState, app, db, msg_to, scene)
                 reply_message("During this process, "
@@ -202,14 +203,15 @@ def handle_message(event):
                               "character you chat with:\n"
                               "- [Identity]: ")
         else:
-            data = DBHelper.SceneStateDBHelper.select_data(
+            scene_state = DBHelper.SceneStateDBHelper.select_data(
                 SceneState, app, msg_to)
+            
             sections = ['reply']
             data = DBHelper.UserDBHelper.select_data(User, app, source_id)
             if data["grammar_on"]:
                 sections.append('grammar')
 
-            if data is False:
+            if scene_state is False:
                 reply = reply_chat_cached(msg_to, event.message.text,
                                           sections=sections)
                 reply_message(reply)
@@ -234,13 +236,13 @@ def handle_message(event):
 
                 for i in range(len(characterSettings)):
                     setting = characterSettings[i]
-                    if data[setting] == "":
-                        data[setting] = replyMsgCharacterSettings[setting] + event.message.text
+                    if scene_state[setting] == "":
+                        scene_state[setting] = replyMsgCharacterSettings[setting] + event.message.text
                         if i + 1 < len(characterSettings):
                             nextSetting = characterSettings[i+1]
                             reply_message(replyMsgCharacterSettings[nextSetting])
                             DBHelper.SceneStateDBHelper.update_data(
-                                SceneState, app, db, msg_to, data)
+                                SceneState, app, db, msg_to, scene_state)
                         else:
                             # Create a chat hist with given parameter.
                             DBHelper.SceneStateDBHelper.delete_data(
@@ -248,13 +250,15 @@ def handle_message(event):
 
                             character_trait = ""
                             for setting in characterSettings:
-                                character_trait = character_trait + "\n" + data[setting]
+                                character_trait = character_trait + "\n" + scene_state[setting]
 
-                            reply_chat_cached_with_character_trait(
+                            reply = reply_chat_cached_with_character_trait(
                                 msg_to,
                                 character_trait,
-                                data["scene"],
+                                scene_state["scene"],
                                 sections)
+                            
+                            reply_message(reply)
                         break
 
 

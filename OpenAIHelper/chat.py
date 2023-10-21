@@ -52,7 +52,7 @@ def chat_default(user_msg, chat_id=None):
             'chat_init',
             {
                 "story_scene": story_scene_gen_tmpl,
-                "rule": """
+                "rules": """
                 - Please engage in a daily conversation with me, while role-playing.
 - The user who you are having conversation with may be anyone in the campus, user may come in different gender, age, country, personality, social character.  
 - Avoid mentioning your nature as an AI language model unless I specifically refer to it in my prompts or in case of ethical violations. Thank you.
@@ -133,19 +133,44 @@ def chat_with_character_trait(character_trait, target_scene):
             }
         )
     
+    chat_hist = [{
+        "role": "system",
+        "content": character_gen_tmpl
+    }]
+
+    character_gen_chat_completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=chat_hist
+    )
+
+    character_gen = character_gen_chat_completion.choices[0].message
+
     story_scene_gen_tmpl = load_chat_template_safe(
             'story_scene_gen',
             {
-                "character": character_gen_tmpl,
+                "character": character_gen,
                 "story": scene,
             }
         )
     
-    chat_init_tmp1 = load_chat_template_safe(
+    chat_hist = [{
+        "role": "system",
+        "content": story_scene_gen_tmpl
+    }]
+
+    story_scene_gen_chat_completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=chat_hist
+    )
+
+    story_scene_gen = story_scene_gen_chat_completion.choices[0].message
+
+    
+    chat_init_tmpl = load_chat_template_safe(
             'chat_init',
             {
-                "story_scene": story_scene_gen_tmpl,
-                "rule": """
+                "story_scene": story_scene_gen,
+                "rules": """
                 - Please engage in a daily conversation with me, while role-playing.
 - The user who you are having conversation with may be anyone in the campus, user may come in different gender, age, country, personality, social character.  
 - Avoid mentioning your nature as an AI language model unless I specifically refer to it in my prompts or in case of ethical violations. Thank you.
@@ -153,10 +178,10 @@ def chat_with_character_trait(character_trait, target_scene):
 """
             }
     )
-    
+
     chat_hist = [{
         "role": "system",
-        "content": chat_init_tmp1
+        "content": chat_init_tmpl
     }]
 
     chat_completion = openai.ChatCompletion.create(
