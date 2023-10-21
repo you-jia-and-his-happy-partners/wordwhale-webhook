@@ -9,6 +9,8 @@ def SceneCarouselTemplateFactory():
 
     _thumbnail_image_urls = [
         'https://wordwhalestorage.file.core.windows.net/hackathon'
+        '/elevator.jpg' + sas_token,
+        'https://wordwhalestorage.file.core.windows.net/hackathon'
         '/resturant.jpeg' + sas_token,
         'https://wordwhalestorage.file.core.windows.net/hackathon'
         '/question_mark.png' + sas_token,
