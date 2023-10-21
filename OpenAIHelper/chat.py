@@ -112,3 +112,65 @@ def chat_default(user_msg, chat_id=None):
         "grammar": grammar_completion.choices[0].message.content
     }
     return sections, chat_completion.id
+
+
+def chat_with_character_trait(character_trait, target_scene):
+    scenes = [
+        "- Scene: After just finishing an interesting general education course in the comprehensive teaching building, you are walking toward the elevator corridor when you run into a friend.",
+        "- Scene: You are sitting in the Student Second Cafeteria having lunch and a drink, the cafeteria is full of crowds lining up, suddenly someone asks you if they can share the table and sit next to you."
+    ]
+
+    scene = ""
+    if target_scene == "電梯":
+        scene = scenes[0]
+    else:
+        scene = scenes[1]
+
+    character_gen_tmpl = load_chat_template_safe(
+            'character_gen',
+            {
+                "user_input": character_trait
+            }
+        )
+    
+    story_scene_gen_tmpl = load_chat_template_safe(
+            'story_scene_gen',
+            {
+                "character": character_gen_tmpl,
+                "story": scene,
+            }
+        )
+    
+    chat_init_tmp1 = load_chat_template_safe(
+            'chat_init',
+            {
+                "story_scene": story_scene_gen_tmpl,
+                "rule": """
+                - Please engage in a daily conversation with me, while role-playing.
+- The user who you are having conversation with may be anyone in the campus, user may come in different gender, age, country, personality, social character.  
+- Avoid mentioning your nature as an AI language model unless I specifically refer to it in my prompts or in case of ethical violations. Thank you.
+- Always print the reply in the format: ‘[character name]: reply message…..’
+"""
+            }
+    )
+    
+    chat_hist = [{
+        "role": "system",
+        "content": chat_init_tmp1
+    }]
+
+    chat_completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=chat_hist
+    )
+
+    chat_id = chat_completion.id
+    chat_hist.append(chat_completion.choices[0].message)
+    _chat_cache[chat_id] = chat_hist
+
+    logger.debug("Chat completed with response: %s", chat_completion)
+    sections = {
+        "reply": chat_completion.choices[0].message.content,
+        "grammar": ""
+    }
+    return sections, chat_completion.id
