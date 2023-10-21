@@ -20,6 +20,7 @@ app = Flask(__name__)
 load_dotenv()
 channel_secret = os.getenv('CHANNEL_SECRET')
 access_token = os.getenv('CHANNEL_ACCESS_TOKEN')
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 handler = WebhookHandler(channel_secret)
 configuration = Configuration(access_token=access_token)
