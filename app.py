@@ -79,6 +79,13 @@ def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
 
+        def reply_message(text):
+            # echo msg
+            line_bot_api.reply_message_with_http_info(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=text)]))
+
         source_id = ""
 
         if event.source.type == "user":
@@ -116,16 +123,28 @@ def handle_message(event):
             DBHelper.update_flags(
                 data["id"], not data["grammar_on"],
                 data["caption_on"], data["translation_on"])
+            
+            reply_message(
+                "文法糾正已切換為 {}".format(('開啟', '關閉')[data['grammar_on']])
+            )
         elif event.message.text == "> 語音輔助字幕顯示":
             data = DBHelper.select_data(source_id)
             DBHelper.update_flags(
                 data["id"], data["grammar_on"],
                 not data["caption_on"], data["translation_on"])
+            
+            reply_message(
+                "語音輔助字幕已切換為 {}".format(('開啟', '關閉')[data['caption_on']])
+            )
         elif event.message.text == "> 中文輔助字幕顯示":
             data = DBHelper.select_data(source_id)
             DBHelper.update_flags(
                 data["id"], data["grammar_on"],
-                data["caption_on"], data["translation_on"])
+                data["caption_on"], not data["translation_on"])
+            
+            reply_message(
+                "中文輔助字幕已切換為 {}".format(('開啟', '關閉')[data['translation_on']])
+            )
         elif event.message.text == "> 重設對話":
             if msg_to in _user_chat_cache:
                 del _user_chat_cache[msg_to]
@@ -142,12 +161,6 @@ def handle_message(event):
             except openai.error.RateLimitError:
                 reply = '<quota exceeded, please report the issue>'
 
-            line_bot_api.reply_message_with_http_info(
-                ReplyMessageRequest(reply_token=event.reply_token,
-                                    messages=[TextMessage(text=reply)]))
+            reply_message(reply)
         else:
-            # echo msg
-            line_bot_api.reply_message_with_http_info(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=event.message.text)]))
+            reply_message(event.message.text)
