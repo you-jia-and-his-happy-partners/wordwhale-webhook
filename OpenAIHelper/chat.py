@@ -290,3 +290,96 @@ def chat_random():
     }
 
     return sections, _chat_id
+
+
+def multi_chat_character_gen_default(user_msg, chat_id=None):
+    """
+    Default multi-user chat function. Passes `user_msg` with templates to ChatGPT.
+    """
+    multi_character_gen_tmpl = load_chat_template_safe(
+            'character_gen',
+            {
+                "user_input": """
+- [Identity]: a exchange senior student from France
+- [Department/Grade]: major in management science 
+- [Extracurricular Activities/Club]: attend dessert club
+- [Personality]: shy, heartwarming, willing to try new things and meet new friends
+- [Interest]: still learning to play piano, love to watch popular anime
+                """
+            }
+        )
+    return multi_character_gen_tmpl
+
+
+def multi_chat_summarization_default(user_msg, chat_id=None):
+    """
+    Default multi-user chat summarization function. Passes `user_msg` with templates to ChatGPT.
+    """
+
+    if chat_id and chat_id not in _chat_cache:
+        logger.warning("Ignoring invalid chat id '%s'", chat_id)
+        chat_id = None
+
+    if not chat_id:
+        chat_hist = [{
+            "role": "system",
+            "content": multi_chat_character_gen_default(user_msg, chat_id=chat_id)
+        }]
+    else:
+        assert chat_id in _chat_cache
+        chat_hist = _chat_cache[chat_id]
+
+    chat_hist.append({
+        "role": "user",
+        "content": user_msg
+    })
+
+    multi_chat_summarization_tmpl = load_chat_template_safe( #Q
+            'summary',
+            {
+                "history": chat_hist
+            }
+    )
+
+    chat_completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{
+            "role": "system",
+            "content": multi_chat_summarization_tmpl
+        }]
+    )
+
+    chat_id = chat_completion.id
+    chat_hist.append(chat_completion.choices[0].message)
+    _chat_cache[chat_id] = chat_hist
+
+    logger.debug("Chat completed with response: %s", chat_completion)
+    # sections = {
+    #     "reply": chat_completion.choices[0].message.content,
+    # }
+    return chat_hist
+
+
+def multi_chat_default(user_msg, chat_id=None):
+    """
+    Default multi-user chat function. Passes `user_msg` with templates to ChatGPT.
+    """
+    multi_chat_tmpl = load_chat_template_safe(
+            'multi_chat_reply',
+            {
+                "user_input": multi_chat_summarization_default(user_msg, chat_id=chat_id)
+            }
+    )
+    chat_completion = openai.Completion.create(
+        model="gpt-3.5-turbo",
+        messages=multi_chat_tmpl
+    )
+    chat_id = chat_completion.id
+    chat_hist.append(chat_completion.choices[0].message)
+    _chat_cache[chat_id] = chat_hist
+
+    logger.debug("Chat completed with response: %s", chat_completion)
+    sections = {
+        "reply": chat_completion.choices[0].message.content,
+    }
+    return sections, chat_completion.id
