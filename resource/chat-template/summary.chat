@@ -1,0 +1,3 @@
+Please summarize the below chat among multiple users in 200 words. Each reply message is in the format: "[username]: reply message......".  
+The chat to be summarized:
+"${history}"
