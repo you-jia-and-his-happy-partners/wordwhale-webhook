@@ -127,9 +127,9 @@ def chat_with_character_trait(character_trait, target_scene):
         scene = scenes[1]
 
     character_gen_tmpl = load_chat_template_safe(
-            'character_gen',
+            'random_character_refine',
             {
-                "user_input": character_trait
+                "step1_result": character_trait
             }
         )
     
