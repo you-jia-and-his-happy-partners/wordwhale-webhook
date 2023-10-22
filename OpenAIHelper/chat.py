@@ -260,10 +260,15 @@ def chat_random():
 
     # STEP4: create starting dialog based on STEP2 and STEP3
     dialog_start_tmpl = load_chat_template_safe(
-            'random_dialog_start',
+            'chat_init',
             {
-                "step2_result": character_description,
-                "step3_result": scene_description
+                "story_scene": scene_description,
+                "rules": """
+                - Please engage in a daily conversation with me, while role-playing.
+- The user who you are having conversation with may be anyone in the campus, user may come in different gender, age, country, personality, social character.  
+- Avoid mentioning your nature as an AI language model unless I specifically refer to it in my prompts or in case of ethical violations. Thank you.
+- Always print the reply in the format: ‘[character name]: reply message…..’
+"""
             }
         )
 
