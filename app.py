@@ -21,7 +21,7 @@ import openai
 
 from CarouselTemplateFactory.CarouselTemplateFactory import (
     SceneCarouselTemplateFactory)
-from OpenAIHelper.chat import (chat_default, chat_with_character_trait, chat_random, multi_chat_default)
+from OpenAIHelper.chat import (chat_default, chat_with_character_trait, chat_random)
 from AWSTranslate.translate import (translate_en_zh)
 from AzureSpeechToText.SpeechToText import (
     get_text_with_content,
@@ -126,7 +126,7 @@ def handle_message(event):
             DBHelper.UserDBHelper.insert_data(
                 User, app, db, source_id, False, False, False)
 
-        msg_to = _get_message_target(event)
+        msg_to = str(event.source)
         if event.message.text == "> 場景切換":
             if msg_to in _user_chat_cache:
                 del _user_chat_cache[msg_to]
@@ -217,7 +217,7 @@ def handle_message(event):
 
             if scene_state is False:
                 reply = reply_chat_cached(msg_to, event.message.text,
-                                          sections=sections, line_bot_api=line_bot_api)
+                                          sections=sections)
                 reply_message(reply)
             else:
                 characterSettings = [
@@ -307,7 +307,7 @@ def handle_audio_message(event):
         app.logger.debug("Receive text: %s", receive_text)
 
         # ChatGPT
-        msg_to = _get_message_target(event)
+        msg_to = str(event.source)
         reply_text = reply_chat_cached(msg_to, receive_text, sections=['reply'])
 
         # text to speech
@@ -354,22 +354,15 @@ def _reply_text_with_push_message_api(source_id, text):
     app.logger.debug(req.text)
 
 
-def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar'], user_id=None, line_bot_api=None):
+def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar']):
     reply = '<failed to process the chat>'
     try:
-        if user_id and line_bot_api:
-            # TODO: refactor the workaround
-            username = line_bot_api.get_profile(user_id)
-            user_msg = f'[{username.display_name}] {user_msg}'
-
         chat_id = None
         if msg_to in _user_chat_cache:
             chat_id = _user_chat_cache[msg_to]
 
-        section_reply, _user_chat_cache[msg_to] = multi_chat_default(user_msg, chat_id=chat_id)
-        # section_reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
-
-        reply = "\n---\n".join(section_reply[sect] for sect in sections if sect in section_reply)
+        section_reply, _user_chat_cache[msg_to] = chat_default(user_msg, chat_id=chat_id)
+        reply = "\n---\n".join(section_reply[sect] for sect in sections)
     except openai.error.RateLimitError:
         reply = '<quota exceeded, please report the issue>'
 
@@ -396,13 +389,3 @@ def reply_chat_random_scene_and_character(msg_to):
         reply = '<quota exceeded, please report the issue>'
 
     return reply
-
-
-def _get_message_target(event):
-    # globally enable multi-user chat
-    if event.source.type == "user":
-        return event.source.user_id
-    elif event.source.type == "room":
-        return event.source.room_id
-    else:
-        return event.source.group_id
