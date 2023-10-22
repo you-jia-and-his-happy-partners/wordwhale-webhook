@@ -216,8 +216,8 @@ def handle_message(event):
                 sections.append('grammar')
 
             if scene_state is False:
-                reply = reply_chat_cached(msg_to, event.message.text,
-                                          sections=sections, line_bot_api=line_bot_api)
+                reply = reply_chat_cached(msg_to, event.message.text[2:],
+                                          sections=sections, user_id=event.source.user_id, line_bot_api=line_bot_api)
                 reply_message(reply)
             else:
                 characterSettings = [
