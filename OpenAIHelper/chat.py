@@ -296,8 +296,10 @@ def multi_chat_character_gen_default(user_msg, chat_id=None):
     """
     Default multi-user chat function. Passes `user_msg` with templates to ChatGPT.
     """
+
+    # TODO: create multi-user specific template
     multi_character_gen_tmpl = load_chat_template_safe(
-            'character_gen',
+            'random_character_refine',
             {
                 "user_input": """
 - [Identity]: a exchange senior student from France
@@ -308,6 +310,7 @@ def multi_chat_character_gen_default(user_msg, chat_id=None):
                 """
             }
         )
+
     return multi_character_gen_tmpl
 
 
@@ -329,17 +332,17 @@ def multi_chat_summarization_default(user_msg, chat_id=None):
         assert chat_id in _chat_cache
         chat_hist = _chat_cache[chat_id]
 
+    multi_chat_summarization_tmpl = load_chat_template_safe( #Q
+        'summary',
+        {
+            "history": chat_hist
+        }
+    )
+
     chat_hist.append({
         "role": "user",
         "content": user_msg
     })
-
-    multi_chat_summarization_tmpl = load_chat_template_safe( #Q
-            'summary',
-            {
-                "history": chat_hist
-            }
-    )
 
     chat_completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -364,16 +367,60 @@ def multi_chat_default(user_msg, chat_id=None):
     """
     Default multi-user chat function. Passes `user_msg` with templates to ChatGPT.
     """
-    multi_chat_tmpl = load_chat_template_safe(
-            'multi_chat_reply',
-            {
-                "user_input": multi_chat_summarization_default(user_msg, chat_id=chat_id)
-            }
+    if chat_id and chat_id not in _chat_cache:
+        logger.warning("Ignoring invalid chat id '%s'", chat_id)
+        chat_id = None
+
+    multi_create_tmpl = load_chat_template_safe(
+        'multi_character_gen',
+        {}
     )
-    chat_completion = openai.Completion.create(
+
+    multi_reply_tmpl = load_chat_template_safe(
+        'multi_chat_tag_reply',
+        {}
+    )
+
+    # multi_chat_tmpl = load_chat_template_safe(
+    #     'multi_chat_reply',
+    #     {
+    #         "user_input": multi_chat_summarization_default(user_msg, chat_id=chat_id)
+    #     }
+    # )
+
+    if False:
+        # summary is needed
+        raise NotImplementedError
+
+    if not chat_id:
+        chat_hist = [{
+            "role": "system",
+            "content": multi_create_tmpl
+        }]
+
+        create_completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=chat_hist
+        )
+        chat_hist.append(create_completion.choices[0].message)
+
+        chat_hist.append({
+            "role": "system",
+            "content": multi_reply_tmpl
+        })
+    else:
+        assert chat_id in _chat_cache
+        chat_hist = _chat_cache[chat_id]
+
+    chat_hist.append({
+        "role": "user",
+        "content": user_msg
+    })
+    chat_completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=multi_chat_tmpl
+        messages=chat_hist
     )
+
     chat_id = chat_completion.id
     chat_hist.append(chat_completion.choices[0].message)
     _chat_cache[chat_id] = chat_hist
