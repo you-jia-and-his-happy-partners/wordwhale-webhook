@@ -217,7 +217,7 @@ def handle_message(event):
 
             if scene_state is False:
                 reply = reply_chat_cached(msg_to, event.message.text,
-                                          sections=sections)
+                                          sections=sections, line_bot_api=line_bot_api)
                 reply_message(reply)
             else:
                 characterSettings = [
@@ -354,12 +354,13 @@ def _reply_text_with_push_message_api(source_id, text):
     app.logger.debug(req.text)
 
 
-def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar'], user_id=None):
+def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar'], user_id=None, line_bot_api=None):
     reply = '<failed to process the chat>'
     try:
-        if user_id:
+        if user_id and line_bot_api:
             # TODO: refactor the workaround
-            user_msg = f'[{user_id}] {user_msg}'
+            username = line_bot_api.get_profile(user_id)
+            user_msg = f'[{username}] {user_msg}'
 
         chat_id = None
         if msg_to in _user_chat_cache:
