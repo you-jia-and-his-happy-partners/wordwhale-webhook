@@ -360,7 +360,7 @@ def reply_chat_cached(msg_to, user_msg, sections=['reply', 'grammar'], user_id=N
         if user_id and line_bot_api:
             # TODO: refactor the workaround
             username = line_bot_api.get_profile(user_id)
-            user_msg = f'[{username}] {user_msg}'
+            user_msg = f'[{username.display_name}] {user_msg}'
 
         chat_id = None
         if msg_to in _user_chat_cache:
