@@ -10,3 +10,6 @@
 - [Line Develop Document](https://developers.line.biz/en/reference/messaging-api/#message-common-properties)
 - [Azure Text to Speech | Microsoft Learn](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/get-started-text-to-speech?tabs=linux%2Cterminal&pivots=programming-language-python)
 - [Develop for Azure Files with Python | Microsoft Learn](https://learn.microsoft.com/en-us/azure/storage/files/storage-python-how-to-use-file-storage)
+
+## Objective 
+To make bilinguish education more easily....
